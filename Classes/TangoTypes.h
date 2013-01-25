@@ -193,9 +193,15 @@ typedef struct _tango_file_info {
 	
 	char path[128];
 	char filename[128];
+    
+    char creation_timestamp[20];
+    char last_access_timestamp[20];
+    char last_write_timestamp[20];
 
 	unsigned char is_folder;
 	unsigned int file_size;
+    
+    unsigned short attributes;
 	
 	unsigned short fid;
 } tango_file_info_t;

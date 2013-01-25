@@ -21,6 +21,7 @@
 #include "tango_Write.h"
 #include "Tango_NT_Create.h"
 #include "Tango_Close.h"
+
 #include <netdb.h>
 
 #pragma mark -
@@ -225,7 +226,6 @@ int tango_list_directory(tango_connection_t *connection, tango_file_info_t *dire
 int tango_read_file(tango_connection_t *connection, tango_file_info_t *file_info, unsigned int offset, unsigned int bytes, unsigned char *buffer) {
 	int operation_result = -1;
 	
-	int result;
 	if ((operation_result = _tango_NT_Create(connection, file_info, kTangoOpenFileForRead, FILE_OPEN)) == -1) {
 		goto bailout;
 	}
@@ -234,7 +234,7 @@ int tango_read_file(tango_connection_t *connection, tango_file_info_t *file_info
     
     operation_result = read_bytes;
 
-    int close_result = _tango_Close(connection, file_info);
+    _tango_Close(connection, file_info);
     
 bailout:
 	return operation_result;
@@ -243,7 +243,6 @@ bailout:
 int tango_write_file(tango_connection_t *connection, tango_file_info_t *file_info, unsigned int offset, unsigned int bytes, const unsigned char *buffer) {
 	int operation_result = -1;
 	
-	int result;
 	if ((operation_result = _tango_NT_Create(connection, file_info, kTangoOpenFileForWrite, FILE_OVERWRITE_IF)) == -1) {
 		goto bailout;
 	}
@@ -252,7 +251,7 @@ int tango_write_file(tango_connection_t *connection, tango_file_info_t *file_inf
     
     operation_result = written_bytes;
     
-    int close_result = _tango_Close(connection, file_info);
+    _tango_Close(connection, file_info);
     
 bailout:
 	return operation_result;

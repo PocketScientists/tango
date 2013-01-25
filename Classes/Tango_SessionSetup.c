@@ -15,12 +15,12 @@
 void _tango_print_SESSION_SETUP_RESPONSE(const tango_smb_t *smb) {
 	_tango_print_message_header(smb);
 	
-	// Parameters
+	/* Parameters
 	unsigned char *parameters_ptr = _tango_smb_getParametersPointer(smb);
 	
 	printf("@PARAMETERS = \n");
 	
-	/*
+	
 	printf("@DialectIndex = 0x%04x\n", *(unsigned short *)(parameters_ptr + SMB_NEGOTIATE_PROTOCOL_RSP_PARAMETERS_DIALECT_INDEX_SHORT));
 	printf("@SecurityMode = 0x%02x\n", *(unsigned char *)(parameters_ptr + SMB_NEGOTIATE_PROTOCOL_RSP_PARAMETERS_SECURITY_MODE_BYTE));
 	printf("@MaxMpxCount = 0x%04x\n", *(unsigned short *)(parameters_ptr + SMB_NEGOTIATE_PROTOCOL_RSP_PARAMETERS_MAX_MPX_COUNT_SHORT));

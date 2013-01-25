@@ -11,6 +11,8 @@
 
 #include "TangoBase.h"
 
+char *convert_smb_date_to_string(unsigned short smb_date, unsigned short smb_time);
+
 void _tango_print_TRANS2_FIND_FIRST2_REQUEST(const tango_smb_t *smb) {
 	_tango_print_message_header(smb);
 	
@@ -385,9 +387,24 @@ int _tango_TRANS2_FIND_FIRST2(tango_connection_t *connection, const char *search
 	
 	int idx = -1;
 	for (int i=0; i<(resp_data_search_count < file_info_arr_size ? resp_data_search_count : file_info_arr_size); i++) {
-		
-		data_offset+=12; // dont care for dates for now
-		
+        unsigned short creation_date = *((unsigned short *)(data_ptr + data_offset));
+        data_offset+=2;
+        
+        unsigned short creation_time = *((unsigned short *)(data_ptr + data_offset));
+        data_offset+=2;
+        
+        unsigned short last_access_date = *((unsigned short *)(data_ptr + data_offset));
+        data_offset+=2;
+        
+        unsigned short last_access_time = *((unsigned short *)(data_ptr + data_offset));
+        data_offset+=2;
+        
+        unsigned short last_write_date = *((unsigned short *)(data_ptr + data_offset));
+        data_offset+=2;
+        
+        unsigned short last_write_time = *((unsigned short *)(data_ptr + data_offset));
+        data_offset+=2;
+        
 		// DataSize
 		unsigned int file_size = *((unsigned int *)(data_ptr + data_offset));
 		data_offset+=4;
@@ -410,15 +427,18 @@ int _tango_TRANS2_FIND_FIRST2(tango_connection_t *connection, const char *search
 			idx++;
 			
 			//file_info_arr[idx].connection = connection;
+            strcpy(file_info_arr[idx].creation_timestamp, convert_smb_date_to_string(creation_date, creation_time));
+            strcpy(file_info_arr[idx].last_access_timestamp, convert_smb_date_to_string(last_access_date, last_access_time));
+            strcpy(file_info_arr[idx].last_write_timestamp, convert_smb_date_to_string(last_write_date, last_write_time));
 			
 			// FileName
 			strcpy(file_info_arr[idx].filename, (char *)(data_ptr + data_offset));
-
 			// Filesize
 			file_info_arr[idx].file_size = file_size;
 			
 			// Attributes
-			file_info_arr[idx].is_folder = file_attributes & 0x0010;
+			file_info_arr[idx].is_folder = file_attributes & 0x0010 || file_attributes & 0x1000;
+            file_info_arr[idx].attributes = file_attributes;
 			
 			// folder
 			unsigned int pos_of_last_slash = strrchr(search_pattern, '\\') - search_pattern;
@@ -428,11 +448,25 @@ int _tango_TRANS2_FIND_FIRST2(tango_connection_t *connection, const char *search
 		}
 		
 		data_offset += strlen((char *)(data_ptr + data_offset)) + 1;
-	}
+ 	}
 	
 	operation_successful = idx + 1;
 	
 bailout:
 	_tango_release_smb(smb);
 	return operation_successful;
+}
+
+char *convert_smb_date_to_string(unsigned short smb_date, unsigned short smb_time) {
+    int year = ((smb_date & 0xFE00) >> 9) + 1980;
+    int month = (smb_date & 0x01E0) >> 5;
+    int day = (smb_date & 0x001F);
+    
+    int seconds = (smb_time & 0x001F) * 2;
+    int minutes = (smb_time & 0x07E0) >> 5;
+    int hours = (smb_time & 0xF800) >> 11;
+    
+    char *date_and_time = malloc(20);
+    sprintf(date_and_time, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hours, minutes, seconds);
+    return date_and_time;
 }
