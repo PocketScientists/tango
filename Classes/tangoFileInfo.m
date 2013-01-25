@@ -29,7 +29,7 @@
 }
 
 - (NSString *)name {
-	return [NSString stringWithCString:_fileInfo.filename];	
+	return [NSString stringWithCString:_fileInfo.filename encoding:NSUTF8StringEncoding];
 }
 
 - (NSUInteger)size {
